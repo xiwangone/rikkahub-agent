@@ -145,7 +145,10 @@ fun ProviderConfigure(
             }
 
             is ProviderSetting.Reasonix -> {
-                Unit
+                ReasonixProviderConfigure(
+                    provider = provider,
+                    onEdit = onEdit,
+                )
             }
         }
     }

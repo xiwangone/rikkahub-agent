@@ -213,11 +213,7 @@ fun ChatMessageNerdLine(
                         },
                         content = {
                             val cachedPct =
-                                if (sessionTotals.cachedTokens > 0 && sessionTotals.inputTokens > 0) {
-                                    " (${sessionTotals.cachedTokens.toInt().formatNumber()} 命中缓存 · ${String.format(java.util.Locale.US, "%.1f%%", sessionTotals.cachedTokens.toDouble() / sessionTotals.inputTokens.toDouble() * 100.0)})"
-                                } else {
-                                    " (${sessionTotals.cachedTokens.toInt().formatNumber()} 命中缓存)"
-                                }
+                                " (${sessionTotals.cachedTokens.toInt().formatNumber()} 命中缓存 · ${String.format(java.util.Locale.US, "%.1f%%", if (sessionTotals.inputTokens > 0) sessionTotals.cachedTokens.toDouble() / sessionTotals.inputTokens.toDouble() * 100.0 else 0.0)})"
                             Text(
                                 text = "↑${sessionTotals.inputTokens.toInt().formatNumber()} 输入$cachedPct ↓${sessionTotals.outputTokens.toInt().formatNumber()} 输出",
                             )
@@ -228,11 +224,7 @@ fun ChatMessageNerdLine(
                             Modifier
                                 .clickable(onClick = {
                                     val cachedPct =
-                                        if (sessionTotals.cachedTokens > 0 && sessionTotals.inputTokens > 0) {
-                                            " (${sessionTotals.cachedTokens.toInt().formatNumber()} cached · ${String.format(java.util.Locale.US, "%.1f%%", sessionTotals.cachedTokens.toDouble() / sessionTotals.inputTokens.toDouble() * 100.0)})"
-                                        } else {
-                                            " (${sessionTotals.cachedTokens.toInt().formatNumber()} cached)"
-                                        }
+                                        " (${sessionTotals.cachedTokens.toInt().formatNumber()} cached · ${String.format(java.util.Locale.US, "%.1f%%", if (sessionTotals.inputTokens > 0) sessionTotals.cachedTokens.toDouble() / sessionTotals.inputTokens.toDouble() * 100.0 else 0.0)})"
                                     sessionPendingCopy =
                                         "↑${sessionTotals.inputTokens.toInt().formatNumber()} tokens$cachedPct ↓${sessionTotals.outputTokens.toInt().formatNumber()} tokens"
                                 })
