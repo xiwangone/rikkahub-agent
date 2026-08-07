@@ -10,6 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.service.WebServerService
@@ -110,8 +111,10 @@ class ReasonixWebBridge(
             session.connect(15_000)
 
             // 反向隧道：ECS 的 remoteTunnelPort → 手机的 localhost:localWebPort
-            session.setPortForwardingR(remoteTunnelPort, "127.0.0.1", localWebPort)
+            // 4 参数重载：setPortForwardingR(bind_address, bind_port, host, port)
+            // bind_address 留空 = 监听 ECS 所有接口（reasonix 在本机访问 127.0.0.1 也可）
             sshSession = session
+            session.setPortForwardingR("", remoteTunnelPort, "127.0.0.1", localWebPort)
             Log.i(TAG, "SSH reverse tunnel established: ECS:$remoteTunnelPort -> local:$localWebPort")
             true
         } catch (e: Exception) {
