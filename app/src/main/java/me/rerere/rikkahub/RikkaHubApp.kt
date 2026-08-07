@@ -59,6 +59,14 @@ class RikkaHubApp : Application() {
         }
         this.createNotificationChannel()
 
+        // 额度悬浮窗：开关开启且有 provider 时自动常驻显示（App 生命周期内监听开关变化）
+        runCatching {
+            val quotaPrefs = org.koin.java.KoinJavaComponent.get(me.rerere.rikkahub.data.quota.QuotaPreferences::class.java)
+            me.rerere.rikkahub.data.quota.QuotaOverlay.show(this, quotaPrefs)
+        }.onFailure { t ->
+            Log.w(TAG, "QuotaOverlay init failed", t)
+        }
+
         // Restore any headless conversation IDs that survived a process kill; must run
         // before any cron worker fires so mark/unmark are consistent.
         HeadlessConversations.init(this)
