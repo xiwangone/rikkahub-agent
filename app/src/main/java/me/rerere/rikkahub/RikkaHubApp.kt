@@ -61,7 +61,8 @@ class RikkaHubApp : Application() {
 
         // 额度悬浮窗：开关开启且有 provider 时自动常驻显示（App 生命周期内监听开关变化）
         runCatching {
-            val quotaPrefs = org.koin.java.KoinJavaComponent.get(me.rerere.rikkahub.data.quota.QuotaPreferences::class.java)
+            val quotaPrefs: me.rerere.rikkahub.data.quota.QuotaPreferences =
+                org.koin.java.KoinJavaComponent.getKoin().get()
             me.rerere.rikkahub.data.quota.QuotaOverlay.show(this, quotaPrefs)
         }.onFailure { t ->
             Log.w(TAG, "QuotaOverlay init failed", t)
