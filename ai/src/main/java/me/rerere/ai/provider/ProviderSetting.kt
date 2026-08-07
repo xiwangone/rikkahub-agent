@@ -484,10 +484,12 @@ sealed class ProviderSetting {
         @Transient override val builtIn: Boolean = false,
         @Transient override val description: @Composable (() -> Unit) = {},
         @Transient override val shortDescription: @Composable (() -> Unit) = {},
-        var baseUrl: String = "http://47.76.110.203:10002",
+        var baseUrl: String = "",
         var username: String = "",
         var password: String = "",
         var token: String = "",
+        // ── 连接方式：serve（HTTP/SSE 直连）| ssh（SSH 反向隧道）──
+        var connectionMode: String = "serve",
         // ── Web 桥（手机 Web 服务反向隧道到 ECS，供 reasonix 访问）──
         var webBridgeEnabled: Boolean = false,
         var webBridgeEcsHost: String = "47.76.110.203",

@@ -148,6 +148,11 @@ class ReasonixProvider(
             ?.joinToString("") { it.text }
             ?: return@flow
 
+        // 必须先 POST /new（新建会话）+ POST /submit（提交增量输入），
+        // 服务端才会开始生成并向 /events 推送；否则两端干等（App 无限转圈）。
+        api.newSession()
+        api.submit(lastUserInput)
+
         // 通过 SSE 建立连接后提交增量输入
         val sse = ReasonixSseClient(
             baseUrl = providerSetting.baseUrl,

@@ -9,6 +9,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,7 +60,37 @@ fun ReasonixProviderConfigure(
         onValueChange = { onEdit(provider.copy(baseUrl = it.trim())) },
         label = { Text(stringResource(R.string.setting_provider_page_api_base_url)) },
         modifier = Modifier.fillMaxWidth(),
+        placeholder = { Text("例：http://<ECS地址>:10002") },
         isError = provider.baseUrl.isNotBlank() && provider.baseUrl.toHttpUrlOrNull() == null,
+    )
+
+    // 连接方式选择
+    Text(
+        text = "连接方式",
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        listOf("serve" to "serve（HTTP/SSE 直连）", "ssh" to "SSH 反向隧道").forEach { (mode, label) ->
+            androidx.compose.material3.FilterChip(
+                selected = provider.connectionMode == mode,
+                onClick = { onEdit(provider.copy(connectionMode = mode)) },
+                label = { Text(label) },
+            )
+        }
+    }
+    Text(
+        text =
+            if (provider.connectionMode == "serve") {
+                "直连 Reasonix serve 的 HTTP API（:10002），需填写 baseUrl + Basic Auth 用户名/密码。"
+            } else {
+                "通过 SSH 反向隧道访问手机 Web 服务（开发中，需配合 Web 桥）。"
+            },
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
     OutlinedTextField(
