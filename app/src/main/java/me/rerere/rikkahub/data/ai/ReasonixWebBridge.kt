@@ -106,8 +106,8 @@ class ReasonixWebBridge(
             }
             // 非交互：接受 host key（首次连接；生产应校验指纹）
             session.setConfig("StrictHostKeyChecking", "no")
-            session.setConfig("ServerAliveInterval", 30)
-            session.setConfig("ServerAliveCountMax", 3)
+            session.setConfig("ServerAliveInterval", "30")
+            session.setConfig("ServerAliveCountMax", "3")
             session.connect(15_000)
 
             // 反向隧道：ECS 的 remoteTunnelPort → 手机的 localhost:localWebPort
