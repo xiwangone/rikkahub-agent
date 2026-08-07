@@ -212,8 +212,14 @@ fun ChatMessageNerdLine(
                             )
                         },
                         content = {
+                            val cachedPct =
+                                if (sessionTotals.cachedTokens > 0 && sessionTotals.inputTokens > 0) {
+                                    " (${sessionTotals.cachedTokens.toInt().formatNumber()} 命中缓存 · ${String.format(java.util.Locale.US, "%.1f%%", sessionTotals.cachedTokens.toDouble() / sessionTotals.inputTokens.toDouble() * 100.0)})"
+                                } else {
+                                    " (${sessionTotals.cachedTokens.toInt().formatNumber()} 命中缓存)"
+                                }
                             Text(
-                                text = "↑${sessionTotals.inputTokens.toInt().formatNumber()} 输入 (${sessionTotals.cachedTokens.toInt().formatNumber()} 命中缓存) ↓${sessionTotals.outputTokens.toInt().formatNumber()} 输出",
+                                text = "↑${sessionTotals.inputTokens.toInt().formatNumber()} 输入$cachedPct ↓${sessionTotals.outputTokens.toInt().formatNumber()} 输出",
                             )
                         },
                     )
@@ -221,8 +227,14 @@ fun ChatMessageNerdLine(
                         modifier =
                             Modifier
                                 .clickable(onClick = {
+                                    val cachedPct =
+                                        if (sessionTotals.cachedTokens > 0 && sessionTotals.inputTokens > 0) {
+                                            " (${sessionTotals.cachedTokens.toInt().formatNumber()} cached · ${String.format(java.util.Locale.US, "%.1f%%", sessionTotals.cachedTokens.toDouble() / sessionTotals.inputTokens.toDouble() * 100.0)})"
+                                        } else {
+                                            " (${sessionTotals.cachedTokens.toInt().formatNumber()} cached)"
+                                        }
                                     sessionPendingCopy =
-                                        "↑${sessionTotals.inputTokens.toInt().formatNumber()} tokens (${sessionTotals.cachedTokens.toInt().formatNumber()} cached) ↓${sessionTotals.outputTokens.toInt().formatNumber()} tokens"
+                                        "↑${sessionTotals.inputTokens.toInt().formatNumber()} tokens$cachedPct ↓${sessionTotals.outputTokens.toInt().formatNumber()} tokens"
                                 })
                                 .padding(2.dp),
                     ) {
