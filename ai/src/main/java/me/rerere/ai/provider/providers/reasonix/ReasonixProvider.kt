@@ -1,6 +1,7 @@
 package me.rerere.ai.provider.providers.reasonix
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.core.TokenUsage
@@ -165,12 +166,35 @@ class ReasonixProvider(
         var usage: TokenUsage? = null
         var textAccumulator = StringBuilder()
         var reasoningAccumulator = StringBuilder()
-        var turnDone = false
 
-        events.collect { event ->
+        // reasonix serve 的 /events 是长连接（keep-alive），不会自然关流。
+        // 多 turn 自动任务（工具调用循环）会在同一热流里连续发：
+        //   turn_started → tool → tool_result → ... → turn_done → turn_started → ...
+        // 收尾策略：内容事件刷新 idle；turn_done 后超过 TURN_DONE_IDLE_TIMEOUT_MS
+        // 无任何内容事件 → 任务真正完成 → 结束 flow（UI 收尾，不再「working」）。
+        // 实现：热流支持多次 first()（不重建连接），withTimeoutOrNull 提供超时。
+        var turnDone = false
+        var lastContentAt = System.currentTimeMillis()
+        while (true) {
+            val event =
+                kotlinx.coroutines.withTimeoutOrNull(
+                    if (turnDone) TURN_DONE_IDLE_TIMEOUT_MS else Long.MAX_VALUE
+                ) {
+                    events.first()
+                } ?: break
+
+            val isContent =
+                event.kind in
+                    setOf(
+                        "text", "reasoning", "tool_dispatch", "tool_result", "usage",
+                        "message", "turn_started",
+                    )
+            if (isContent) {
+                lastContentAt = System.currentTimeMillis()
+            }
             when (event.kind) {
                 "text" -> {
-                    val t = event.text ?: return@collect
+                    val t = event.text ?: continue
                     textAccumulator.append(t)
                     emit(
                         chunk(
@@ -185,7 +209,7 @@ class ReasonixProvider(
                     )
                 }
                 "reasoning" -> {
-                    val r = event.reasoning ?: return@collect
+                    val r = event.reasoning ?: continue
                     reasoningAccumulator.append(r)
                     emit(
                         chunk(
@@ -280,9 +304,13 @@ class ReasonixProvider(
                             finishReason = "stop",
                         )
                     )
-                    return@collect
+                    // 不结束：多 turn 自动任务可能马上开始下一轮。
+                    // 下一轮 first() 带 TURN_DONE_IDLE_TIMEOUT_MS 超时：
+                    // 有新内容则继续，无则 withTimeoutOrNull 返回 null → break 收尾。
                 }
-                else -> {}
+                else -> {
+                    // notice/phase/approval_request/ask_request 等非内容事件：忽略
+                }
             }
         }
         if (!turnDone) {
@@ -329,3 +357,5 @@ class ReasonixProvider(
             usage = usage,
         )
 }
+
+private const val TURN_DONE_IDLE_TIMEOUT_MS = 15_000L
