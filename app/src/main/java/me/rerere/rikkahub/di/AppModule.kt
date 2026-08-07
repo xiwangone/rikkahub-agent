@@ -327,6 +327,12 @@ val appModule =
         }
 
         single {
+            me.rerere.rikkahub.data.ai.ReasonixWebBridge(
+                context = get(),
+            )
+        }
+
+        single {
             me.rerere.rikkahub.ui.pages.setting.doctor.DoctorChecks(
                 context = get(),
                 settingsStore = get(),

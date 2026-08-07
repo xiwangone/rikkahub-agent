@@ -488,6 +488,14 @@ sealed class ProviderSetting {
         var username: String = "",
         var password: String = "",
         var token: String = "",
+        // ── Web 桥（手机 Web 服务反向隧道到 ECS，供 reasonix 访问）──
+        var webBridgeEnabled: Boolean = false,
+        var webBridgeEcsHost: String = "47.76.110.203",
+        var webBridgeEcsPort: Int = 22,
+        var webBridgeEcsUser: String = "root",
+        var webBridgeRemotePort: Int = 8080,
+        var webBridgeLocalPort: Int = 8080,
+        var webBridgePrivateKeyPath: String = "",
     ) : ProviderSetting() {
         override fun addModel(model: Model): ProviderSetting = copy(models = models + model)
 
