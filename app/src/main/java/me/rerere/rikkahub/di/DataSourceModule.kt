@@ -190,13 +190,7 @@ val dataSourceModule =
                 memoryRepo = get(),
                 conversationRepo = get(),
                 aiLoggingManager = get(),
-                systemPromptBuilder = get(),
             )
-        }
-
-        single {
-            me.rerere.rikkahub.data.ai
-                .SystemPromptBuilder()
         }
 
         single<OkHttpClient> {

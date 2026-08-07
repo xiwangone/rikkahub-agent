@@ -366,9 +366,6 @@ class ClaudeProvider(
             put("stream", stream)
 
             // system prompt
-            // 断点放在第一个 (stable) block 上：GenerationHandler 组装 system 消息时
-            // stable 在前、volatile (memory / recent chats / per-call addendum) 在后，
-            // 断点只缓存 stable 前缀，volatile 每轮变化不再使已缓存前缀失效。
             val systemMessage = messages.firstOrNull { it.role == MessageRole.SYSTEM }
             val systemTextParts = systemMessage?.parts?.filterIsInstance<UIMessagePart.Text>().orEmpty()
             if (systemTextParts.isNotEmpty()) {
@@ -380,7 +377,7 @@ class ClaudeProvider(
                                 buildJsonObject {
                                     put("type", "text")
                                     put("text", part.text)
-                                    if (providerSetting.promptCaching && index == 0) {
+                                    if (providerSetting.promptCaching && index == systemTextParts.lastIndex) {
                                         put("cache_control", cacheControlEphemeral(providerSetting.promptCacheTtl))
                                     }
                                 },

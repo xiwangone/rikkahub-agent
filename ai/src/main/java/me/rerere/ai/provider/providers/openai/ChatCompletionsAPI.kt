@@ -497,7 +497,7 @@ class ChatCompletionsAPI(
 
             if (params.model.abilities.contains(ModelAbility.TOOL) && params.tools.isNotEmpty()) {
                 putJsonArray("tools") {
-                    params.tools.sortedBy { it.name }.forEach { tool ->
+                    params.tools.forEach { tool ->
                         add(
                             buildJsonObject {
                                 put("type", "function")
@@ -695,7 +695,7 @@ class ChatCompletionsAPI(
                     reasoningPart = null // 清空，下一个 group 可能有新的 reasoning
 
                     // 紧跟 tool 结果消息
-                    group.tools.sortedBy { it.toolName }.forEach { tool ->
+                    group.tools.forEach { tool ->
                         add(
                             buildJsonObject {
                                 put("role", "tool")

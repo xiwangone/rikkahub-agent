@@ -278,7 +278,6 @@ class GenerationHandler(
     private val memoryRepo: MemoryRepository,
     private val conversationRepo: ConversationRepository,
     private val aiLoggingManager: AILoggingManager,
-    private val systemPromptBuilder: SystemPromptBuilder,
 ) {
     fun generateText(
         settings: Settings,
@@ -975,37 +974,31 @@ class GenerationHandler(
             val recentChatsPrompt = if (assistant.enableRecentChatsReference) {
                 buildRecentChatsPrompt(assistant, conversationRepo)
             } else ""
-            val toolPrompts = tools.map { tool -> tool.systemPrompt(model, messages) }
-            // Split into stable (assistant + tools) and volatile (memory + recent chats +
-            // addendum) so prompt caching survives memory injection: the stable part is the
-            // cached prefix, the volatile part sits after it. See SystemPromptBuilder.
-            val (stableSystem, volatileSystem) = systemPromptBuilder.buildSections(
-                assistantPrompt = effectiveSystemPrompt,
-                memoryPrompt = "",
-                recentChatsPrompt = "",
-                toolPrompts = toolPrompts,
-                systemAddendum = systemAddendum,
-            )
-            val systemParts = buildList {
-                if (stableSystem.isNotBlank()) add(UIMessagePart.Text(stableSystem))
-                if (volatileSystem.isNotBlank()) add(UIMessagePart.Text(volatileSystem))
+            // 官方写法：直接 buildString 拼接 system（无 stable/volatile 分离）
+            val system = buildString {
+                if (effectiveSystemPrompt.isNotBlank()) {
+                    append(effectiveSystemPrompt)
+                }
+                if (memoryPrompt.isNotBlank()) {
+                    appendLine()
+                    append(memoryPrompt)
+                }
+                if (recentChatsPrompt.isNotBlank()) {
+                    appendLine()
+                    append(recentChatsPrompt)
+                }
+                if (!systemAddendum.isNullOrBlank()) {
+                    appendLine()
+                    append(systemAddendum)
+                }
+                tools.forEach { tool ->
+                    appendLine()
+                    append(tool.systemPrompt(model, messages))
+                }
             }
-            if (systemParts.isNotEmpty()) {
-                add(UIMessage(role = MessageRole.SYSTEM, parts = systemParts))
-            }
+            if (system.isNotBlank()) add(UIMessage.system(prompt = system))
             addAll(messages.ageOldToolImages())
             addAll(messages.limitContext(assistant.contextMessageLimit))
-            // volatile 移出 SYSTEM：memory/recentChats 追加到消息末尾，让 SYSTEM 字节冻结
-            val dynamicContext = buildString {
-                if (memoryPrompt.isNotBlank()) {
-                    append(memoryPrompt)
-                    if (recentChatsPrompt.isNotBlank()) appendLine()
-                }
-                if (recentChatsPrompt.isNotBlank()) append(recentChatsPrompt)
-            }
-            if (dynamicContext.isNotBlank()) {
-                add(UIMessage(role = MessageRole.USER, parts = listOf(UIMessagePart.Text(dynamicContext))))
-            }
         }.transforms(
             transformers = transformers,
             context = context,

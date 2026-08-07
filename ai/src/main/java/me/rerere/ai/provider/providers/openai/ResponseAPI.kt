@@ -273,7 +273,7 @@ class ResponseAPI(
             if (useFunctionTools || params.model.tools.isNotEmpty()) {
                 putJsonArray("tools") {
                     if (useFunctionTools) {
-                        params.tools.sortedBy { it.name }.forEach { tool ->
+                        params.tools.forEach { tool ->
                             add(
                                 buildJsonObject {
                                     put("type", "function")
@@ -290,7 +290,7 @@ class ResponseAPI(
                         }
                     }
                     // built-in tools
-                    params.model.tools.sortedBy { it::class.simpleName.orEmpty() }.forEach { builtInTool ->
+                    params.model.tools.forEach { builtInTool ->
                         when (builtInTool) {
                             BuiltInTools.Search -> {
                                 add(
@@ -398,7 +398,7 @@ class ResponseAPI(
                     }
 
                     // 输出 function_call + function_call_output
-                    group.tools.sortedBy { it.toolName }.forEach { tool ->
+                    group.tools.forEach { tool ->
                         add(
                             buildJsonObject {
                                 put("type", "function_call")

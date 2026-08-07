@@ -1167,7 +1167,6 @@ mDNS 地址：使用 .local 主机名，同一网络中的其他设备可通过�
   <string name="setting_model_page_auto_compress_token_limit_desc">累计 Token 消耗超过该值即自动压缩（0 = 不启用）</string>
   <string name="auto_compress_confirm_title">是否确认压缩？</string>
   <string name="auto_compress_confirm_desc">压缩将摘要并重置当前对话的历史消息，是否继续？</string>
-  <string name="auto_compress_cache_reset_notice">上下文已压缩 — prompt 缓存前缀已重置，下一条消息将按全价输入计费。</string>
   <string name="auto_compress_reset_warning">⚠️ 自动压缩将重置当前对话中的历史消息</string>
   <string name="auto_compress_invalid_input">请输入有效值</string>
   <string name="setting_model_page_tool_output">工具输出限制</string>

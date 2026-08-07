@@ -291,22 +291,11 @@ class ChatVM(
                     additionalPrompt = "",
                     targetTokens = 2000,
                     keepRecentMessages = 32,
-                ).onSuccess {
-                    // 压缩会重写历史，缓存前缀必然失效，提示用户下一条消息缓存将重置
-                    compressCacheResetNotice = true
-                }.onFailure {
+                ).onFailure {
                     chatService.addError(it, title = context.getString(R.string.error_title_compress_conversation))
                 }
             autoCompressNextTriggerAt = autoCompressTriggerPoint(settings.value)
         }
-    }
-
-    /** 一次性通知：压缩完成 → 缓存前缀已重置（由 ChatPage 消费后清空） */
-    var compressCacheResetNotice by mutableStateOf(false)
-        private set
-
-    fun consumeCompressCacheResetNotice() {
-        compressCacheResetNotice = false
     }
 
     /** 取消压缩：延后触发点 = 当前累计值 + 阈值（累计统计不清零） */

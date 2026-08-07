@@ -505,7 +505,7 @@ class GoogleProvider(
                                 put(
                                     "functionDeclarations",
                                     buildJsonArray {
-                                        params.tools.sortedBy { it.name }.forEach { tool ->
+                                        params.tools.forEach { tool ->
                                             add(
                                                 buildJsonObject {
                                                     put("name", JsonPrimitive(tool.name))
@@ -542,7 +542,7 @@ class GoogleProvider(
                 put(
                     "tools",
                     buildJsonArray {
-                        params.model.tools.sortedBy { it::class.simpleName.orEmpty() }.forEach { builtInTool ->
+                        params.model.tools.forEach { builtInTool ->
                             when (builtInTool) {
                                 BuiltInTools.Search -> {
                                     add(
@@ -765,7 +765,7 @@ class GoogleProvider(
 
                 is PartGroup.Tools -> {
                     // 添加 functionCall 到 parts 缓冲
-                    group.tools.sortedBy { it.toolName }.forEach { tool ->
+                    group.tools.forEach { tool ->
                         val effective =
                             if (
                                 tool.metadata

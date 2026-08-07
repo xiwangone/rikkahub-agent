@@ -274,18 +274,6 @@ fun ChatPage(
 
     // 自动压缩触发确认弹窗：达到触发点时询问「是否确认压缩？」
     // 确认 → 压缩；取消 → 延后触发点（当前累计值 + 阈值，累计统计不清零）
-    // 压缩完成后提示缓存前缀已重置（下一条消息缓存 miss）
-    val toaster = LocalToaster.current
-    val context = LocalContext.current
-    LaunchedEffect(vm.compressCacheResetNotice) {
-        if (vm.compressCacheResetNotice) {
-            toaster.show(
-                context.getString(R.string.auto_compress_cache_reset_notice),
-                type = ToastType.Warning,
-            )
-            vm.consumeCompressCacheResetNotice()
-        }
-    }
     if (vm.pendingAutoCompressConfirm) {
         AlertDialog(
             onDismissRequest = { vm.cancelAutoCompress() },

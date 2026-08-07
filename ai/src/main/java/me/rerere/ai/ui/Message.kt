@@ -303,31 +303,29 @@ fun List<UIMessagePart>.isEmptyUIMessage(): Boolean {
 private const val CONTEXT_KEEP_RATIO = 0.5f
 
 /**
- * 按"保前缀、只从末尾回收"策略限制上下文消息数量
+ * 按阶梯式(滞回)策略限制上下文消息数量
  *
- * 与旧的滞回（阶梯式平移）不同，本实现固定保留开头 [prefixKeep] 条作为**稳定前缀**，
- * 只从末尾裁掉超长部分。只要对话还在增长、前缀条数不变，system 之后的头部字节就
- * 始终一致，DeepSeek/OpenAI 等自动前缀缓存即可持续命中。
+ * 与每轮平移一条的滑动窗口不同, 截断点只在消息数越过 [limit] 时才前进一大步,
+ * 在此之后的连续多轮里保持不动, 使请求前缀保持稳定, 从而命中提示词缓存。
+ * 截断点仅由消息条数推导, 不需要额外持久化状态, 且对追加消息天然稳定。
  *
- * 头部前缀固定、从末尾回收，故缓存前缀（system + 历史头）字节级稳定，避免跨台阶漂移。
+ * 保留的条数始终落在 `[limit * CONTEXT_KEEP_RATIO, limit)` 区间内。
  *
  * @param limit 触发截断的消息条数上限, 小于等于 0 表示不限制
  */
 fun List<UIMessage>.limitContext(limit: Int): List<UIMessage> {
     if (limit <= 0 || this.size <= limit) return this
 
-    // 固定保留的头部条数（稳定前缀，随对话增长不变）；末尾保留剩余的 limit - prefixKeep 条
-    val prefixKeep = (limit * CONTEXT_KEEP_RATIO).roundToInt().coerceIn(1, limit - 1)
-    val tailKeep = limit - prefixKeep
+    // 截断后回落到的目标条数, 以及两次截断之间截断点前进的步幅
+    // limit 为 1 时无法构造滞回(步幅至少为 1), 此时退化为逐条平移的滑动窗口
+    val target = (limit * CONTEXT_KEEP_RATIO).roundToInt().coerceIn(1, limit)
+    val stride = (limit - target).coerceAtLeast(1)
 
-    // 头部窗口：稳定前缀 [0, prefixKeep)，永不裁剪，保证缓存前缀字节级稳定
-    val head = this.subList(0, prefixKeep)
-    // 尾部窗口：从安全边界（避免半截 tool）开始保留最新上下文；尾部调整不影响前缀稳定
-    val tailStart = alignContextStart(this.size - tailKeep)
-    // 若尾部起点已落入头部前缀内（保留区间基本覆盖全文），则不裁剪
-    if (tailStart <= prefixKeep) return this
+    // 每越过一级台阶, 截断点前进 stride 条; 台阶之内截断点不动
+    // 上界兜底保证至少保留一条消息, 正常路径(limit >= 2)不会触发
+    val startIndex = (((this.size - limit) / stride + 1) * stride).coerceAtMost(this.size - 1)
 
-    return head + this.subList(tailStart, this.size)
+    return this.subList(alignContextStart(startIndex), this.size)
 }
 
 /**

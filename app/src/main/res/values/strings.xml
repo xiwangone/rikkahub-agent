@@ -1182,7 +1182,6 @@
   <string name="setting_model_page_auto_compress_token_limit_desc">Auto compress when accumulated token consumption exceeds this value (0 = disabled)</string>
   <string name="auto_compress_confirm_title">Compress context?</string>
   <string name="auto_compress_confirm_desc">Compressing will summarize and reset the current conversation history. Continue?</string>
-  <string name="auto_compress_cache_reset_notice">Context compressed — prompt cache prefix was reset. The next message will be billed at full input rate.</string>
   <string name="auto_compress_reset_warning">⚠️ Auto compress will reset the current conversation history</string>
   <string name="auto_compress_invalid_input">Please enter a valid value</string>
   <string name="setting_model_page_tool_output">Tool Output Limit</string>
